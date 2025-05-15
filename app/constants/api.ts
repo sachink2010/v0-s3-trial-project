@@ -1,0 +1,2 @@
+export const UPLOAD_API_URL = "https://m6oqkewcu5.execute-api.us-east-1.amazonaws.com/upload";
+export const GET_API_URL = "https://m6oqkewcu5.execute-api.us-east-1.amazonaws.com/list-images?order=desc";

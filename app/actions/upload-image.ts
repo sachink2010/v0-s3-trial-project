@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { v4 as uuidv4 } from "uuid"
+import { UPLOAD_API_URL } from "../constants/api"
 
 export async function uploadImage(formData: FormData) {
   try {
@@ -16,19 +17,36 @@ export async function uploadImage(formData: FormData) {
       return { success: false, error: "File must be an image" }
     }
 
-    // In a real application, you would upload the file to S3 here
-    // For now, we'll simulate a successful upload
+    // Prepare the API endpoint and headers
+    const fileBuffer = await file.arrayBuffer()
+    const fileName = file.name.replace(/\s/g, "-")
 
-    // Generate a mock URL for the uploaded image
-    const mockImageUrl = "https://images.unsplash.com/photo-1682687982501-1e58ab814714"
+    // POST the image as binary data
+    const response = await fetch(UPLOAD_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": file.type,
+        "X-Filename": fileName,
+      },
+      body: Buffer.from(fileBuffer),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      return { success: false, error: `Upload failed: ${errorText}` }
+    }
+
+    // Get the image URL from the API response
+    const result = await response.json()
+    const uploadedUrl = result.url || ""
 
     // Revalidate the path to show the new image
     revalidatePath("/")
 
     return {
       success: true,
-      fileKey: `uploads/${uuidv4()}-${file.name.replace(/\s/g, "-")}`,
-      url: mockImageUrl,
+      fileKey: `uploads/${uuidv4()}-${fileName}`,
+      url: uploadedUrl,
     }
   } catch (error) {
     console.error("Error uploading file:", error)
