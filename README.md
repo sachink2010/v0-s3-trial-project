@@ -28,3 +28,75 @@ Continue building your app on:
 2. Deploy your chats from the v0 interface
 3. Changes are automatically pushed to this repository
 4. Vercel deploys the latest version from this repository
+
+# Backend Setup & Development
+
+This project uses **AWS SAM** to run two Python Lambdas (`POST /upload` and `GET /list-images`) backed by an existing S3 bucket.
+
+## Prerequisites
+
+- **Python 3.13** (or 3.12+)
+- **AWS CLI** v2, configured with an IAM user/role that has:
+  - `cloudformation:*`, `iam:PassRole`, `s3:*`, `lambda:*`, `apigateway:*`, and `logs:*`
+- **AWS SAM CLI**
+- **Docker** (for `sam local`)
+
+---
+
+## 1. Clone & Install Dependencies
+
+```bash
+git clone <url>
+cd v0-s3-trial-project/backend
+python3.13 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## 2. Create .env in backend/
+
+BUCKET_NAME=13052025-sachin
+
+## 3. Create env.json in backend/ ( For local development only.)
+
+{
+  "UploadFunction":    { "BUCKET_NAME": "13052025-sachin" },
+  "ListImagesFunction": { "BUCKET_NAME": "13052025-sachin" }
+}
+
+## 4. Local Dev 
+
+sam build
+
+sam local start-api \
+  --env-vars env.json \
+  --port 3000 \
+  --binary-media-types image/jpeg,image/png
+
+curl -v -X POST http://127.0.0.1:3000/upload \
+     -H "Content-Type: image/jpeg" \
+     -H "X-Filename: test.jpeg" \
+     --data-binary @test_data/test.jpeg
+
+curl -v "http://127.0.0.1:3000/list-images?sort=size&order=desc"
+
+
+## 5. Remote (Production)
+
+cd backend
+sam build
+sam deploy ( use --guided if you want to use different config other than committed one)
+
+
+curl -X POST <ApiUrl>/upload \
+     -H "Content-Type: image/png" \
+     -H "X-Filename: test.png" \
+     --data-binary @test_data/test.png
+
+
+curl <ApiUrl>/list-images?sort=size&order=desc"
+
+## 6 Logs
+
+sam logs --stack-name s3-trial-app --name UploadFunction --tail
+sam logs --stack-name s3-trial-app --name ListImagesFunction --tail

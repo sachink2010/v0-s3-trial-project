@@ -1,0 +1,10 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "s3-trial-app"
+resolve_s3 = true
+s3_prefix = "s3-trial-app"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
+parameter_overrides = "BucketName=\"13052025-sachin\""
