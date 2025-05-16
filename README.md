@@ -99,4 +99,5 @@ curl <ApiUrl>/list-images?sort=size&order=desc"
 ## 6 Logs
 
 sam logs --stack-name s3-trial-app --name UploadFunction --tail
+
 sam logs --stack-name s3-trial-app --name ListImagesFunction --tail
